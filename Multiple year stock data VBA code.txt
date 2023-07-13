@@ -1,0 +1,106 @@
+Attribute VB_Name = "Module1"
+Sub StockMarket():
+   
+    'Applies VBA to each worksheet
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+     
+        Dim Ticker As String
+        Dim OpenPrice As Double
+        Dim ClosePrice As Double
+        Dim YearlyChange As Double
+        Dim PercentChange As Double
+        Dim PriceRow As Long
+            PriceRow = 2
+        Dim SummaryTableRow As Integer
+            SummaryTableRow = 2
+            
+            TotalStockVolume = 0
+        
+        'Create new header for new table
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        
+        'Finds the last row for the loop
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        'Starts Loop
+          For i = 2 To lastrow
+            
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                Ticker = ws.Cells(i, 1).Value
+                
+                TotalStockVolume = TotalStockVolume + ws.Cells(i, 7).Value
+                
+                'Inputs Ticker and Total Stock Volume into correct columns
+                ws.Range("I" & SummaryTableRow).Value = Ticker
+                ws.Range("L" & SummaryTableRow).Value = TotalStockVolume
+                
+                    'Calculation for "Yearly Change"
+                    OpenPrice = ws.Range("C" & PriceRow).Value
+                    ClosePrice = ws.Range("F" & i).Value
+                    YearlyChange = ClosePrice - OpenPrice
+    
+                    'Calculation for "Percent Change"
+                    If OpenPrice = 0 Then
+                        PercentChange = 0
+                    Else
+                        PercentChange = YearlyChange / OpenPrice
+                    End If
+                
+                'Print values of yearly change and percent change
+                ws.Range("J" & SummaryTableRow).Value = YearlyChange
+                ws.Range("K" & SummaryTableRow).Value = PercentChange
+                ws.Range("K" & SummaryTableRow).NumberFormat = "0.00%"
+
+                'Conditional formatting for "Yearly Change" column positive change in green and negative change in red
+                If ws.Range("J" & SummaryTableRow).Value > 0 Then
+                    ws.Range("J" & SummaryTableRow).Interior.ColorIndex = 4
+                Else
+                    ws.Range("J" & SummaryTableRow).Interior.ColorIndex = 3
+                End If
+
+                'Conditional formatting "Percent Change" column positive change in green and negative change in red
+                If ws.Range("K" & SummaryTableRow).Value > 0 Then
+                    ws.Range("K" & SummaryTableRow).Interior.ColorIndex = 4
+                Else
+                    ws.Range("K" & SummaryTableRow).Interior.ColorIndex = 3
+                End If
+
+                'Adds 1 to SummaryTableRow and PriceRow
+                SummaryTableRow = SummaryTableRow + 1
+                PriceRow = i + 1
+                
+                'Makes Total Stock Volume equal 0 for the next loop cycle
+                TotalStockVolume = 0
+            
+            Else
+            
+                TotalStockVolume = TotalStockVolume + ws.Cells(i, 7).Value
+            
+            End If
+        
+        'Continues loop until all the Tickers are complete
+        Next i
+        
+        ws.Range("N2").Value = "Greatest % Increase"
+            ws.Range("O2").Value = Application.WorksheetFunction.Max(ws.Range("K:K"))
+            
+        ws.Range("N3").Value = "Greatest % Decrease"
+            ws.Range("O3").Value = Application.WorksheetFunction.Min(ws.Range("K:K"))
+            
+        ws.Range("N4").Value = "Greatest Total Volume"
+            ws.Range("O4").Value = Application.WorksheetFunction.Max(ws.Range("L:L"))
+    
+    'Continues to loop through worksheets until all worksheets for complete
+    Next ws
+
+End Sub
+
+
+
+
+
+
